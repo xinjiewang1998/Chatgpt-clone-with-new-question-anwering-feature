@@ -1,4 +1,5 @@
-# Build and Deploy Your Own ChatGPT AI Application That Will Help You Code
-![Open AI CodeGPT](https://i.ibb.co/LS4DRhb/image-257.png)
+# A simple chat and question answering web application.
 
-### Launch your development career with project-based coaching - https://www.jsmastery.pro
+1. Chat bot implemented with the openAI api.
+
+2. Question answering over the txt document uploaded by the user.

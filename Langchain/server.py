@@ -8,9 +8,6 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 
-import os
-
-os.environ['OPENAI_API_KEY'] = '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'
 
 app = FastAPI()
 index_creator = VectorstoreIndexCreator()
@@ -32,8 +29,6 @@ class Context(BaseModel):
 @app.post("/generate/")
 async def generate(prompt: Prompt):
 
-    # result = string_to_save[1:30]
-    # res = {"result": result}
     loader = TextLoader('text.txt')
     docsearch = index_creator.from_loaders([loader])
     query = prompt.prompt
@@ -44,9 +39,6 @@ async def generate(prompt: Prompt):
 
 @app.post("/context/")
 async def generate(prompt: Context):
-    # This is where you would generate a response based on the input prompt
     string_to_save = prompt.text
-    # result = string_to_save[1:30]
-    # res = {"result": result}
     with open("text.txt", "w") as file:
         file.write(string_to_save)
