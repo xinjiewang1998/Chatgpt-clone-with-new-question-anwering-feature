@@ -8,6 +8,9 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 
+import os
+
+os.environ['OPENAI_API_KEY'] = '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'
 
 app = FastAPI()
 index_creator = VectorstoreIndexCreator()
