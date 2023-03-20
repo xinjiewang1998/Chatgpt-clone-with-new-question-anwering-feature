@@ -1,5 +1,6 @@
 // import bot from './assets/bot.svg'
 // import user from './assets/user.svg'
+// import * as FileSaver from 'file-saver';
 bot ='./assets/bot.svg'
 user='./assets/user.svg'
 const form = document.querySelector('form')
@@ -64,7 +65,7 @@ function chatStripe(isAi, value, uniqueId) {
     `
     )
 }
-
+let result;
 fileUpload.addEventListener('change', (event) => {
     if (myCheckbox.checked){
         const files = event.target.files;
@@ -78,6 +79,17 @@ fileUpload.addEventListener('change', (event) => {
               content =`${start}\n\n\n ..... \n\n\n .....\n\n\n${end}`
               const uniqueId = generateUniqueId()
               chatContainer.innerHTML += chatStripe(true, content, uniqueId)
+              const url = 'http://localhost:8000/context/';
+              const data = `${fileContents}`;
+            //   console.log(JSON.stringify({ text: data }))
+                fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({text:data})
+                })
+                .then(response => response.json())
+                .catch(error => console.log(error));
+
             };
         }
     }
@@ -88,43 +100,49 @@ fileUpload.addEventListener('change', (event) => {
 const handleSubmit = async (e) => {
     e.preventDefault()
     
-    const data = new FormData(form)
+    const form_data = new FormData(form)
 
 
     if (myCheckbox.checked) {
-        let content=''
         if(fileUpload.files.length == 0){
         
             alert("No file provided, please add you txt files")
             form.reset()
         }else{
-            const selectedFiles = fileUpload.files;
-            
-            // for (let i = 0; i < selectedFiles.length; i++) {
-            //     const fileReader = new FileReader();
-            //     fileReader.readAsText(selectedFiles[i]);
-            //     fileReader.onload = () => {
-            //       const fileContents = fileReader.result;
-            //       const start = fileContents.substring(0,200)
-            //       const end = fileContents.substring(fileContents.length-200)
-            //       content =`${start}\n\n\n ..... \n\n\n .....\n\n\n${end}`
-            //       const uniqueId = generateUniqueId()
-            //       chatContainer.innerHTML += chatStripe(true, content, uniqueId)
-            //     };
-            //   }
-            
-            chatContainer.innerHTML += chatStripe(false, data.get('prompt'))
+            chatContainer.innerHTML += chatStripe(false, form_data.get('prompt'))
             const uniqueId = generateUniqueId()
             chatContainer.innerHTML += chatStripe(true, " ", uniqueId)
-
             // to focus scroll to the bottom 
             chatContainer.scrollTop = chatContainer.scrollHeight;
 
             // specific message div 
             const messageDiv = document.getElementById(uniqueId)
-
-            // messageDiv.innerHTML = "..."
             loader(messageDiv)
+            
+            // messageDiv.innerHTML = "..."
+            messageDiv.innerHTML = " "
+            const response = await fetch('http://localhost:8000/generate/', {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                prompt: form_data.get('prompt')
+            })
+            
+            }) 
+            clearInterval(loadInterval)
+            if (response.ok) {
+                const data = await response.json();
+                const parsedData = data.result.trim() // trims any trailing spaces/'\n' 
+                console.log(parsedData)
+                typeText(messageDiv, parsedData)
+            } else {
+                const err = await response.text()
+        
+                messageDiv.innerHTML = "Something went wrong"
+                alert(err)
+            }
         }
         
     
@@ -135,7 +153,7 @@ const handleSubmit = async (e) => {
     
 
     // user's chatstripe
-    chatContainer.innerHTML += chatStripe(false, data.get('prompt'))
+    chatContainer.innerHTML += chatStripe(false, form_data.get('prompt'))
 
     // to clear the textarea input 
     form.reset()
@@ -159,7 +177,7 @@ const handleSubmit = async (e) => {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            prompt: data.get('prompt')
+            prompt: form_data.get('prompt')
         })
     })
 
