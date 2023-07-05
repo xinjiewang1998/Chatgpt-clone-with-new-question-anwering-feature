@@ -40,5 +40,5 @@ async def generate(prompt: Prompt):
 @app.post("/context/")
 async def generate(prompt: Context):
     string_to_save = prompt.text
-    with open("text.txt", "w") as file:
+    with open("text.txt", "a") as file:
         file.write(string_to_save)
